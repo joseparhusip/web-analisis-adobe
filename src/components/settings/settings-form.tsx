@@ -1,8 +1,9 @@
 "use client";
 
-import { ExternalLink, PlugZap, Save } from "lucide-react";
+import { Bot, ExternalLink, Image as ImageIcon, PlugZap, Save } from "lucide-react";
 import { type ReactNode, useActionState, useRef, useState, useTransition } from "react";
 import { type ConnectionResult, saveSettingsAction, type SettingsActionState, testAiAction } from "@/app/(main)/settings/actions";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Dropdown } from "@/components/ui/dropdown";
@@ -67,7 +68,12 @@ export function SettingsForm({ values, creativityModes, searchModes }: SettingsF
       <input type="hidden" name="defaultPromptCount" value={promptCount} />
 
       <Card>
-        <CardHeader title="Penyedia AI" description="Dipakai untuk analisis, prompt Google Flow, dan baca gambar." />
+        <CardHeader
+          icon={<Bot className="size-4" />}
+          title="Penyedia AI"
+          description="Dipakai untuk analisis, prompt Google Flow, dan baca gambar."
+          action={<Badge tone="accent">{info.label}</Badge>}
+        />
         <CardBody className="space-y-5">
           <div className="grid gap-5 md:grid-cols-2">
             <Field label="Penyedia">
@@ -142,7 +148,11 @@ export function SettingsForm({ values, creativityModes, searchModes }: SettingsF
       </Card>
 
       <Card>
-        <CardHeader title="Shutterstock (opsional)" description="Pembanding jumlah aset saat data Adobe belum ada." />
+        <CardHeader
+          icon={<ImageIcon className="size-4" />}
+          title="Shutterstock (opsional)"
+          description="Pembanding jumlah aset saat data Adobe belum ada."
+        />
         <CardBody className="grid gap-5 md:grid-cols-2">
           <Field label="Client ID">
             <Input name="shutterstockClientId" defaultValue={values.shutterstockClientId} autoComplete="off" />
