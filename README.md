@@ -31,16 +31,44 @@ Dibangun dengan **Next.js 15 + TypeScript**, **Tailwind CSS v4**, **Drizzle ORM 
 
 ## 1. Prasyarat
 
-- **Git**
-- **Node.js 20 atau lebih baru** (disarankan 20 LTS / 22). Cek dengan `node -v`.
+Kamu **hanya perlu menginstall 2 hal**: **Git** dan **Node.js**.
 
-Install Node sesuai OS:
+> **Next.js, TypeScript, Tailwind, dan semua library lain TIDAK perlu diinstall manual.** Semuanya sudah terdaftar di `package.json` dan terpasang otomatis saat kamu menjalankan `npm install` (langkah 3). `npm` sendiri ikut terpasang bersama Node.js.
 
-| OS | Cara install Node |
-|----|-------------------|
-| **Windows** | Unduh installer dari [nodejs.org](https://nodejs.org), atau `winget install OpenJS.NodeJS.LTS` |
-| **macOS** | Unduh dari [nodejs.org](https://nodejs.org), atau `brew install node` |
-| **Linux** | `nvm install --lts` (via [nvm](https://github.com/nvm-sh/nvm)), atau paket distro |
+### Install Node.js
+
+**Windows / macOS (cara termudah):**
+
+1. Buka [nodejs.org](https://nodejs.org).
+2. Unduh versi **LTS** (installer `.msi` untuk Windows, `.pkg` untuk macOS).
+3. Jalankan installer-nya, klik **Next/Continue** sampai selesai (biarkan opsi default).
+4. **Tutup dan buka ulang** terminal/PowerShell.
+5. Verifikasi — harus muncul nomor versinya:
+   ```bash
+   node -v
+   npm -v
+   ```
+
+**Linux:**
+
+```bash
+# via nvm (disarankan)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+nvm install --lts
+```
+
+**Alternatif baris perintah:**
+
+| OS | Perintah |
+|----|----------|
+| Windows | `winget install OpenJS.NodeJS.LTS` |
+| macOS | `brew install node` |
+
+> Butuh **Node.js 20 atau lebih baru**. Kalau `node -v` menampilkan versi di bawah 20, update dulu.
+
+### Install Git
+
+Kalau `git --version` belum muncul: unduh dari [git-scm.com](https://git-scm.com) (Windows/macOS), atau `sudo apt install git` (Linux).
 
 ---
 
@@ -69,6 +97,8 @@ cp .env.example .env.local        # macOS/Linux/Git Bash
 # 3. Jalankan
 npm run dev
 ```
+
+> `npm install` otomatis mengunduh **Next.js, TypeScript, dan semua library** ke folder `node_modules` (butuh internet; agak lama di menit pertama). Setelah itu tidak perlu diulang kecuali ada perubahan dependency.
 
 Buka **http://localhost:3000**.
 
