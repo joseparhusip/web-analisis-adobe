@@ -9,7 +9,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Dropdown } from "@/components/ui/dropdown";
 import { Input } from "@/components/ui/input";
 import { PROMPT_COUNTS } from "@/lib/ai/prompt-options";
-import { defaultModel, getProvider, PROVIDER_LIST, type ProviderId, TIER_LABEL } from "@/lib/ai/providers";
+import { defaultModel, getProvider, PROVIDER_LIST, type ProviderId } from "@/lib/ai/providers";
 import { cn } from "@/lib/utils";
 
 export interface SettingsFormValues {
@@ -26,11 +26,12 @@ export interface SettingsFormValues {
 
 interface SettingsFormProps {
   values: SettingsFormValues;
+  modelsByProvider: Record<string, { value: string; label: string }[]>;
   creativityModes: { value: string; label: string; description: string }[];
   searchModes: { value: string; label: string }[];
 }
 
-export function SettingsForm({ values, creativityModes, searchModes }: SettingsFormProps) {
+export function SettingsForm({ values, modelsByProvider, creativityModes, searchModes }: SettingsFormProps) {
   const [state, action, saving] = useActionState<SettingsActionState | null, FormData>(saveSettingsAction, null);
   const [provider, setProvider] = useState<ProviderId>(values.aiProvider);
   const [model, setModel] = useState(values.aiModel);
@@ -55,10 +56,7 @@ export function SettingsForm({ values, creativityModes, searchModes }: SettingsF
   const testConnection = () =>
     startTest(async () => setConnection(await testAiAction(provider, keyInput.current?.value ?? "", model)));
 
-  const modelOptions = info.models.map((item) => ({
-    value: item.id,
-    label: `${item.label} · ${TIER_LABEL[item.tier]}${item.vision ? " · bisa gambar" : ""}`,
-  }));
+  const modelOptions = modelsByProvider[provider] ?? [];
 
   return (
     <form action={action} className="space-y-6">

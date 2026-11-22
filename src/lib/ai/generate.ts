@@ -1,7 +1,7 @@
 import { activeKey, CREATIVITY_MODES, getSettings } from "@/lib/settings/settings";
 import * as gemini from "./gemini";
 import { GeminiError, type GeminiResult, type InlineImage, listGeminiModels } from "./gemini";
-import { defaultModel, getProvider, modelSupportsVision, type ProviderInfo } from "./providers";
+import { defaultModel, getProvider, type ModelInfo, modelSupportsVision, type ProviderInfo, type Tier } from "./providers";
 
 const REQUEST_TIMEOUT_MS = 90_000;
 const MAX_TOKENS = 4096;
@@ -53,6 +53,65 @@ export async function generateVision(systemInstruction: string, prompt: string, 
   return config.provider.adapter === "anthropic"
     ? callAnthropic(config, systemInstruction, prompt, image)
     : callOpenAI(config, systemInstruction, prompt, image);
+}
+
+function inferTier(providerId: string, id: string): Tier {
+  if (providerId === "gemini") return /pro/.test(id) ? "paid" : "free";
+  if (/mini|lite|haiku|nano|flash|chat|reasoner/.test(id)) return "cheap";
+  return "paid";
+}
+
+function inferVision(providerId: string, id: string): boolean {
+  switch (providerId) {
+    case "gemini":
+      return !/embedding|tts|aqa|imagen/.test(id);
+    case "openai":
+      return /4o|o1|o3|o4|gpt-4\.1|vision/.test(id);
+    case "xai":
+      return /vision|grok-4|grok-2-vision/.test(id);
+    case "anthropic":
+      return true;
+    default:
+      return false;
+  }
+}
+
+const CHAT_MODEL_PATTERN: Record<string, RegExp> = {
+  openai: /^(gpt-|o[134])/,
+  xai: /^grok-/,
+  deepseek: /^deepseek-/,
+  anthropic: /^claude-/,
+};
+
+const EXCLUDE_PATTERN = /embedding|whisper|tts|audio|dall-e|dalle|moderation|realtime|image|rerank|search|transcribe|speech/;
+
+async function fetchModelIds(provider: ProviderInfo, key: string): Promise<string[]> {
+  if (provider.adapter === "gemini") return (await listGeminiModels(key)).map((model) => model.id);
+
+  const headers: Record<string, string> =
+    provider.adapter === "anthropic"
+      ? { "x-api-key": key, "anthropic-version": "2023-06-01" }
+      : { authorization: `Bearer ${key}` };
+  const response = await fetch(`${provider.baseUrl}/models`, { headers, signal: AbortSignal.timeout(15_000) });
+  const body: unknown = await response.json().catch(() => null);
+  if (!response.ok) throw providerError(body, response.status, provider.label);
+
+  const rows = (body as { data?: { id?: string }[]; models?: { id?: string; name?: string }[] } | null) ?? {};
+  const list = rows.data ?? rows.models ?? [];
+  return list.map((item) => item.id ?? (item as { name?: string }).name ?? "").filter(Boolean);
+}
+
+export async function listProviderModels(providerId: string, key: string): Promise<ModelInfo[]> {
+  const provider = getProvider(providerId);
+  const allow = CHAT_MODEL_PATTERN[providerId];
+
+  const ids = (await fetchModelIds(provider, key))
+    .filter((id) => !EXCLUDE_PATTERN.test(id) && (!allow || allow.test(id)))
+    .filter((id, index, all) => all.indexOf(id) === index);
+
+  return ids
+    .map((id) => ({ id, label: id, tier: inferTier(providerId, id), vision: inferVision(providerId, id) }))
+    .sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }) * -1);
 }
 
 export async function testConnection(providerId: string, key: string, model: string): Promise<{ ok: boolean; message: string }> {
