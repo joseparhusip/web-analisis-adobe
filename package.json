@@ -11,7 +11,7 @@
     "share": "next build && next start",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
-    "worker": "tsx --env-file-if-exists=.env.local scripts/refresh-worker.ts"
+    "worker": "tsx --env-file-if-exists=.env scripts/refresh-worker.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",

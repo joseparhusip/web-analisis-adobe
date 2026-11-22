@@ -90,9 +90,9 @@ cd web-analisis-adobe
 npm install
 
 # 2. Siapkan file environment
-cp .env.example .env.local        # macOS/Linux/Git Bash
+cp .env.example .env        # macOS/Linux/Git Bash
 # Windows PowerShell:
-#   Copy-Item .env.example .env.local
+#   Copy-Item .env.example .env
 
 # 3. Jalankan
 npm run dev
@@ -103,7 +103,7 @@ npm run dev
 Buka **http://localhost:3000**.
 
 - Tanpa mengisi apa pun, aplikasi langsung jalan dengan **database file lokal** (`data/research.db`, dibuat otomatis).
-- **Fitur AI** butuh API key: isi lewat halaman **Pengaturan** di dalam aplikasi (disarankan), atau set `GEMINI_API_KEY` di `.env.local`.
+- **Fitur AI** butuh API key: isi lewat halaman **Pengaturan** di dalam aplikasi (disarankan), atau set `GEMINI_API_KEY` di `.env`.
 - Untuk dev yang lebih cepat: `npm run dev:turbo`.
 
 ---
@@ -138,7 +138,7 @@ Database file lokal tidak cocok untuk hosting (filesystem-nya sementara, data hi
    DATABASE_AUTH_TOKEN=token-dari-turso
    ```
 
-Tes lokal dulu: isi dua baris itu di `.env.local`, jalankan `npm run dev`. Kalau aplikasi jalan normal, berarti Turso tersambung. Tabel dibuat otomatis saat koneksi pertama.
+Tes lokal dulu: isi dua baris itu di `.env`, jalankan `npm run dev`. Kalau aplikasi jalan normal, berarti Turso tersambung. Tabel dibuat otomatis saat koneksi pertama.
 
 ---
 

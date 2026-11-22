@@ -92,7 +92,7 @@ export function SettingsForm({ values, modelsByProvider, creativityModes, search
             hint={
               <>
                 Saat ini: {keyMask ?? "belum ada"}
-                {provider === "gemini" && values.geminiKeySource === "env" ? " (dari .env.local)" : ""}. Kosongkan untuk tetap
+                {provider === "gemini" && values.geminiKeySource === "env" ? " (dari .env)" : ""}. Kosongkan untuk tetap
                 memakai key yang tersimpan.{" "}
                 <a href={info.keyUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-medium text-accent hover:underline">
                   Dapatkan API key {info.label}
