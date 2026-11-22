@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { DEFAULT_PROMPT_COUNT, MAX_PROMPT_COUNT } from "@/lib/ai/prompt-options";
+import { getProvider, type ProviderId, type ProviderKeyField } from "@/lib/ai/providers";
 import { getDb } from "@/lib/db/client";
 import { appSettings } from "@/lib/db/schema";
 import { env } from "@/lib/env";
@@ -23,9 +24,14 @@ export type SearchMode = keyof typeof SEARCH_MODES;
 
 export const storedSettingsSchema = z
   .object({
+    aiProvider: z.string(),
+    aiModel: z.string(),
     geminiApiKey: z.string(),
     geminiModel: z.string(),
-    geminiFallbackModel: z.string(),
+    openaiApiKey: z.string(),
+    anthropicApiKey: z.string(),
+    xaiApiKey: z.string(),
+    deepseekApiKey: z.string(),
     searchMode: z.enum(Object.keys(SEARCH_MODES) as [SearchMode, ...SearchMode[]]),
     creativity: z.enum(Object.keys(CREATIVITY_MODES) as [CreativityMode, ...CreativityMode[]]),
     defaultPromptCount: z.number().int().min(1).max(MAX_PROMPT_COUNT),
@@ -37,9 +43,11 @@ export const storedSettingsSchema = z
 export type StoredSettings = z.infer<typeof storedSettingsSchema>;
 
 export interface AppSettings {
+  aiProvider: ProviderId;
+  aiModel: string;
+  apiKeys: Record<ProviderKeyField, string | undefined>;
   geminiApiKey?: string;
   geminiApiKeySource: "settings" | "env" | "none";
-  geminiModel?: string;
   geminiFallbackModels: string[];
   searchMode: SearchMode;
   creativity: CreativityMode;
@@ -57,23 +65,42 @@ async function readStored(): Promise<StoredSettings> {
 
 const present = (value: string | undefined) => (value?.trim() ? value.trim() : undefined);
 
+function isProviderId(value: string | undefined): value is ProviderId {
+  return value !== undefined && value in { gemini: 1, openai: 1, anthropic: 1, xai: 1, deepseek: 1 };
+}
+
 export async function getSettings(): Promise<AppSettings> {
   const stored = await readStored();
-  const storedKey = present(stored.geminiApiKey);
-  const geminiApiKey = storedKey ?? env.GEMINI_API_KEY;
-  const fallback = stored.geminiFallbackModel === undefined ? env.GEMINI_FALLBACK_MODELS : [stored.geminiFallbackModel];
+  const storedGemini = present(stored.geminiApiKey);
+  const geminiApiKey = storedGemini ?? env.GEMINI_API_KEY;
+
+  const apiKeys: Record<ProviderKeyField, string | undefined> = {
+    geminiApiKey,
+    openaiApiKey: present(stored.openaiApiKey),
+    anthropicApiKey: present(stored.anthropicApiKey),
+    xaiApiKey: present(stored.xaiApiKey),
+    deepseekApiKey: present(stored.deepseekApiKey),
+  };
+
+  const aiProvider = isProviderId(stored.aiProvider) ? stored.aiProvider : "gemini";
 
   return {
+    aiProvider,
+    aiModel: present(stored.aiModel) ?? present(stored.geminiModel) ?? (aiProvider === "gemini" ? (env.GEMINI_MODEL ?? "") : ""),
+    apiKeys,
     geminiApiKey,
-    geminiApiKeySource: storedKey ? "settings" : geminiApiKey ? "env" : "none",
-    geminiModel: stored.geminiModel === undefined ? env.GEMINI_MODEL : present(stored.geminiModel),
-    geminiFallbackModels: fallback.filter(Boolean),
+    geminiApiKeySource: storedGemini ? "settings" : geminiApiKey ? "env" : "none",
+    geminiFallbackModels: env.GEMINI_FALLBACK_MODELS.filter(Boolean),
     searchMode: stored.searchMode ?? "auto",
     creativity: stored.creativity ?? "balanced",
     defaultPromptCount: stored.defaultPromptCount ?? DEFAULT_PROMPT_COUNT,
     shutterstockClientId: present(stored.shutterstockClientId) ?? env.SHUTTERSTOCK_CLIENT_ID,
     shutterstockClientSecret: present(stored.shutterstockClientSecret) ?? env.SHUTTERSTOCK_CLIENT_SECRET,
   };
+}
+
+export function activeKey(settings: AppSettings): string | undefined {
+  return settings.apiKeys[getProvider(settings.aiProvider).keyField];
 }
 
 export async function saveSettings(patch: StoredSettings): Promise<void> {

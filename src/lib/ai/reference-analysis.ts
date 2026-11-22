@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ASSET_TYPES } from "@/lib/asset-types";
-import { generateVision, type InlineImage } from "./gemini";
+import { generateVision } from "./generate";
+import type { InlineImage } from "./gemini";
 
 export const REFERENCE_VARIANT_MAX = 10;
 export const REFERENCE_VARIANT_DEFAULT = 3;
@@ -41,7 +42,7 @@ Between variants, change only SPECIFIC ELEMENTS so each result is a distinct ori
 
 Each variant has:
 - "name": a short Indonesian label naming exactly which element is changed (for example "Kado ditata melingkar di bawah", "Ornamen bentuk bintang & lonceng", "Bingkai cemara penuh di sisi kiri").
-- "flowPrompt": an English Google Flow prompt of 150 to 220 words, written as full descriptive sentences in this order: hero subject and its details, composition and framing, background, lighting, color palette, mood and atmosphere, rendering style and quality, aspect ratio. Keep the same theme and palette as the reference; be concrete about the specific element you changed.
+- "flowPrompt": an English Google Flow prompt of 190 to 250 words, written as full descriptive sentences in this order: hero subject and its exact details, composition and framing, background, lighting (source, direction, softness), color palette with named colors, mood and atmosphere, rendering style and quality, aspect ratio. Keep the same theme and palette as the reference; be concrete about the specific element you changed. Use plain, literal, concrete language; do not use metaphors, similes, or poetic phrasing. Describe only what can actually be rendered, and base every detail on what is visible in the reference; do not invent facts, brands, or real places.
 
 Rules for every prompt: do not reproduce the exact identical arrangement of the original, do not imitate any specific named artist or studio style, and never include brand names, logos, trademarks, or readable text. If people appear, make them fictional, diverse, and non-identifiable.
 

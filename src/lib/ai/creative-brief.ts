@@ -58,9 +58,10 @@ const TYPE_GUIDES: Record<AssetType, string> = {
 };
 
 const PROMPT_STRUCTURE = [
-  "Each flowPrompt is one rich, highly specific paragraph of 160 to 220 words, written as full descriptive sentences.",
+  "Each flowPrompt is one rich, highly specific paragraph of 190 to 250 words, written as full descriptive sentences.",
   "Cover, in this order: (1) the hero subject with exact details: shape, size, materials, textures, colors, and the exact number and placement of each supporting element; (2) the setting and ground surface; (3) composition, framing, camera angle, and where the negative space sits; (4) background and depth; (5) lighting: source, direction, softness, time of day; (6) color palette with three to five named colors; (7) mood and atmosphere; (8) style, rendering quality, and aspect ratio; for video also the motion and camera movement second by second.",
   "Be concrete, never vague: write 'three round coal buttons in a vertical row' instead of 'some buttons'.",
+  "Use plain, literal language that a generator can render directly. Do not use metaphors, similes, or poetic phrasing. Describe only things that can actually be seen, and never invent brand names, real places, or facts.",
   "End every prompt with: 'No people, no faces, no hands, no text, no logos, no brand names, no unrelated objects.'",
 ].join(" ");
 

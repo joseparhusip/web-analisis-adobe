@@ -2,7 +2,7 @@ import { Sparkles } from "lucide-react";
 import { getCompetition, getLongTail, getScores, getTrends } from "@/app/(main)/research/data";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { getStoredBriefs } from "@/lib/ai/brief-service";
-import { isGeminiConfigured } from "@/lib/ai/gemini";
+import { isAiConfigured } from "@/lib/ai/generate";
 import { buildResearchContext } from "@/lib/ai/research-context";
 import type { AssetType } from "@/lib/asset-types";
 import { type AssetScore, bestScore } from "@/lib/research/scoring";
@@ -27,7 +27,7 @@ export async function CreativeSection({ keyword, requestedType }: CreativeSectio
     getCompetition(keyword),
     getScores(keyword),
     getStoredBriefs(keyword),
-    isGeminiConfigured(),
+    isAiConfigured(),
     getSettings(),
   ]);
 

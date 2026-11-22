@@ -4,7 +4,7 @@ import { normalizeKeyword } from "@/lib/keyword";
 import { competitionScore } from "@/lib/research/scoring";
 import { buildScoreboard } from "@/lib/research/service";
 import { extractTitlePatterns } from "@/lib/research/title-patterns";
-import { generateWithSearch } from "./gemini";
+import { generateText } from "./generate";
 import { buildNichePrompt, NICHE_SYSTEM_INSTRUCTION, type Niche, type NicheLevel, parseNicheList } from "./niche-finder";
 import { currentWorkspaceId } from "@/lib/workspace/context";
 import { buildResearchContext } from "./research-context";
@@ -65,7 +65,7 @@ export async function generateNiches(keyword: string, focus: string | undefined)
     .slice(0, MAX_TITLES);
   const context = buildResearchContext(keyword, scoreboard, extractTitlePatterns(titles, keyword));
 
-  const result = await generateWithSearch(NICHE_SYSTEM_INSTRUCTION, buildNichePrompt(context, titles, focus));
+  const result = await generateText(NICHE_SYSTEM_INSTRUCTION, buildNichePrompt(context, titles, focus));
   const stored: StoredNiches = {
     ...parseNicheList(result.text),
     focus,

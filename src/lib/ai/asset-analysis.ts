@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { generateVision, type InlineImage } from "./gemini";
+import { generateVision } from "./generate";
+import type { InlineImage } from "./gemini";
 
 export const assetAnalysisSchema = z.object({
   description: z.string(),
@@ -31,6 +32,8 @@ export const ASSET_SYSTEM_INSTRUCTION = `You are an Adobe Stock metadata and com
 3. "keywords": 30 to 49 English keywords, single words or short phrases, ordered most relevant first, describing only what is visible (subject, colors, composition, mood, use case). No people-words unless people are actually visible.
 
 4. "category": pick the single closest match from this Adobe Stock list: ${ADOBE_CATEGORIES.join(", ")}.
+
+Base everything only on what is actually visible in the image. Do not guess, invent, or add elements that are not there. Use plain, literal language; no metaphors or flowery wording.
 
 Write "description" (one short sentence summarizing the image) and the text of each "ruleCheck.issues" entry in casual Indonesian. Write "adobeTitle", "keywords", and "category" in English.
 

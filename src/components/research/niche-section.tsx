@@ -1,7 +1,7 @@
 import { Radar } from "lucide-react";
 import { getCompetition } from "@/app/(main)/research/data";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
-import { isGeminiConfigured } from "@/lib/ai/gemini";
+import { isAiConfigured } from "@/lib/ai/generate";
 import { getNicheReport } from "@/lib/ai/niche-service";
 import { extractTitlePatterns } from "@/lib/research/title-patterns";
 import { NichePanel } from "./niche-panel";
@@ -11,7 +11,7 @@ const FOCUS_LIMIT = 12;
 export async function NicheSection({ keyword }: { keyword: string }) {
   const [{ adobe }, configured, report] = await Promise.all([
     getCompetition(keyword),
-    isGeminiConfigured(),
+    isAiConfigured(),
     getNicheReport(keyword),
   ]);
 

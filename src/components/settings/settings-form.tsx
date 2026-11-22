@@ -1,20 +1,21 @@
 "use client";
 
-import { PlugZap, Save } from "lucide-react";
+import { ExternalLink, PlugZap, Save } from "lucide-react";
 import { type ReactNode, useActionState, useRef, useState, useTransition } from "react";
-import { type ConnectionResult, saveSettingsAction, type SettingsActionState, testGeminiAction } from "@/app/(main)/settings/actions";
+import { type ConnectionResult, saveSettingsAction, type SettingsActionState, testAiAction } from "@/app/(main)/settings/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { Dropdown } from "@/components/ui/dropdown";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { PROMPT_COUNTS } from "@/lib/ai/prompt-options";
+import { defaultModel, getProvider, PROVIDER_LIST, type ProviderId, TIER_LABEL } from "@/lib/ai/providers";
 import { cn } from "@/lib/utils";
 
 export interface SettingsFormValues {
-  geminiKeyMask?: string;
+  aiProvider: ProviderId;
+  aiModel: string;
+  keyMasks: Record<string, string | undefined>;
   geminiKeySource: "settings" | "env" | "none";
-  geminiModel: string;
-  geminiFallbackModel: string;
   searchMode: string;
   creativity: string;
   defaultPromptCount: number;
@@ -24,101 +25,117 @@ export interface SettingsFormValues {
 
 interface SettingsFormProps {
   values: SettingsFormValues;
-  models: { id: string; displayName: string }[];
   creativityModes: { value: string; label: string; description: string }[];
   searchModes: { value: string; label: string }[];
 }
 
-const KEY_SOURCE_LABELS = {
-  settings: "tersimpan dari halaman ini",
-  env: "dari file .env.local",
-  none: "belum ada",
-} as const;
-
-export function SettingsForm({ values, models, creativityModes, searchModes }: SettingsFormProps) {
+export function SettingsForm({ values, creativityModes, searchModes }: SettingsFormProps) {
   const [state, action, saving] = useActionState<SettingsActionState | null, FormData>(saveSettingsAction, null);
+  const [provider, setProvider] = useState<ProviderId>(values.aiProvider);
+  const [model, setModel] = useState(values.aiModel);
+  const [searchMode, setSearchMode] = useState(values.searchMode);
+  const [promptCount, setPromptCount] = useState(String(values.defaultPromptCount));
   const [connection, setConnection] = useState<ConnectionResult>();
   const [testing, startTest] = useTransition();
   const keyInput = useRef<HTMLInputElement>(null);
 
-  const modelOptions = withCurrent(models, [values.geminiModel, values.geminiFallbackModel]);
-  const testConnection = () => startTest(async () => setConnection(await testGeminiAction(keyInput.current?.value ?? "")));
+  const info = getProvider(provider);
+  const keyMask = values.keyMasks[provider];
+  const isStoredHere = provider === "gemini" ? values.geminiKeySource === "settings" : Boolean(keyMask);
+
+  const onProviderChange = (id: string) => {
+    const next = id as ProviderId;
+    setProvider(next);
+    setConnection(undefined);
+    const nextProvider = getProvider(next);
+    if (!nextProvider.models.some((item) => item.id === model)) setModel(defaultModel(nextProvider));
+  };
+
+  const testConnection = () =>
+    startTest(async () => setConnection(await testAiAction(provider, keyInput.current?.value ?? "", model)));
+
+  const modelOptions = info.models.map((item) => ({
+    value: item.id,
+    label: `${item.label} · ${TIER_LABEL[item.tier]}${item.vision ? " · bisa gambar" : ""}`,
+  }));
 
   return (
     <form action={action} className="space-y-6">
+      <input type="hidden" name="aiProvider" value={provider} />
+      <input type="hidden" name="aiModel" value={model} />
+      <input type="hidden" name="searchMode" value={searchMode} />
+      <input type="hidden" name="defaultPromptCount" value={promptCount} />
+
       <Card>
-        <CardHeader title="AI (Gemini)" description="Dipakai untuk analisis dan pembuatan prompt Google Flow." />
+        <CardHeader title="Penyedia AI" description="Dipakai untuk analisis, prompt Google Flow, dan baca gambar." />
         <CardBody className="space-y-5">
+          <div className="grid gap-5 md:grid-cols-2">
+            <Field label="Penyedia">
+              <Dropdown
+                ariaLabel="Penyedia AI"
+                value={provider}
+                onChange={onProviderChange}
+                options={PROVIDER_LIST.map((item) => ({ value: item.id, label: item.label }))}
+              />
+            </Field>
+            <Field label="Model" hint="Urut dari gratis/murah ke berbayar.">
+              <Dropdown ariaLabel="Model" value={model} onChange={setModel} options={modelOptions} />
+            </Field>
+          </div>
+
           <Field
             label="API key"
             hint={
               <>
-                Saat ini: {values.geminiKeyMask ?? "–"} ({KEY_SOURCE_LABELS[values.geminiKeySource]}). Kosongkan untuk tetap memakai
-                key yang sekarang. Key gratis bisa dibuat di aistudio.google.com.
+                Saat ini: {keyMask ?? "belum ada"}
+                {provider === "gemini" && values.geminiKeySource === "env" ? " (dari .env.local)" : ""}. Kosongkan untuk tetap
+                memakai key yang tersimpan.{" "}
+                <a href={info.keyUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-medium text-accent hover:underline">
+                  Dapatkan API key {info.label}
+                  <ExternalLink className="size-3" />
+                </a>
               </>
             }
           >
             <div className="flex flex-wrap gap-2">
-              <Input ref={keyInput} name="geminiApiKey" type="password" autoComplete="off" placeholder="Tempel API key baru" className="flex-1" />
+              <Input ref={keyInput} name="apiKey" type="password" autoComplete="off" placeholder={`Tempel API key ${info.label}`} className="flex-1" />
               <Button type="button" variant="secondary" onClick={testConnection} disabled={testing}>
                 <PlugZap className="size-4" />
                 {testing ? "Mengetes…" : "Tes koneksi"}
               </Button>
             </div>
             {connection && <p className={cn("mt-1.5 text-xs", connection.ok ? "text-success" : "text-danger")}>{connection.message}</p>}
-            {values.geminiKeySource === "settings" && (
+            {isStoredHere && (
               <label className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                <input type="checkbox" name="clearGeminiApiKey" className="accent-accent" />
-                Hapus key yang tersimpan di sini (kembali ke .env.local)
+                <input type="checkbox" name="clearApiKey" className="accent-accent" />
+                Hapus key {info.label} yang tersimpan
               </label>
             )}
           </Field>
-
-          <div className="grid gap-5 md:grid-cols-2">
-            <Field label="Model utama" hint="Otomatis memilih Gemini Flash terbaru di akunmu.">
-              <Select name="geminiModel" defaultValue={values.geminiModel}>
-                <option value="">Otomatis (Flash terbaru)</option>
-                {modelOptions.map((model) => (
-                  <option key={model.id} value={model.id}>
-                    {model.displayName} ({model.id})
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Model cadangan" hint="Dipakai saat model utama sibuk atau kena batas kuota.">
-              <Select name="geminiFallbackModel" defaultValue={values.geminiFallbackModel}>
-                <option value="">Tidak ada</option>
-                {modelOptions.map((model) => (
-                  <option key={model.id} value={model.id}>
-                    {model.displayName} ({model.id})
-                  </option>
-                ))}
-              </Select>
-            </Field>
-          </div>
 
           <Field label="Mode jawaban">
             <RadioCards name="creativity" defaultValue={values.creativity} options={creativityModes} />
           </Field>
 
           <div className="grid gap-5 md:grid-cols-2">
-            <Field label="Google Search" hint="Key gratis biasanya tidak punya kuota Google Search; otomatis dilewati.">
-              <Select name="searchMode" defaultValue={values.searchMode}>
-                {searchModes.map((mode) => (
-                  <option key={mode.value} value={mode.value}>
-                    {mode.label}
-                  </option>
-                ))}
-              </Select>
+            <Field
+              label="Google Search"
+              hint={info.supportsSearch ? "Hanya untuk Gemini; key gratis biasanya tanpa kuota Search." : "Tidak tersedia di penyedia ini."}
+            >
+              <Dropdown
+                ariaLabel="Google Search"
+                value={searchMode}
+                onChange={setSearchMode}
+                options={searchModes.map((mode) => ({ value: mode.value, label: mode.label }))}
+              />
             </Field>
             <Field label="Jumlah prompt default">
-              <Select name="defaultPromptCount" defaultValue={String(values.defaultPromptCount)}>
-                {PROMPT_COUNTS.map((count) => (
-                  <option key={count} value={count}>
-                    {count} prompt
-                  </option>
-                ))}
-              </Select>
+              <Dropdown
+                ariaLabel="Jumlah prompt default"
+                value={promptCount}
+                onChange={setPromptCount}
+                options={PROMPT_COUNTS.map((count) => ({ value: String(count), label: `${count} prompt` }))}
+              />
             </Field>
           </div>
         </CardBody>
@@ -145,11 +162,6 @@ export function SettingsForm({ values, models, creativityModes, searchModes }: S
       </div>
     </form>
   );
-}
-
-function withCurrent(models: SettingsFormProps["models"], current: string[]) {
-  const missing = current.filter((id) => id && !models.some((model) => model.id === id));
-  return [...missing.map((id) => ({ id, displayName: id })), ...models];
 }
 
 function Field({ label, hint, children }: { label: string; hint?: ReactNode; children: ReactNode }) {

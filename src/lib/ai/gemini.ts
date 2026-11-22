@@ -113,7 +113,7 @@ async function loadConfig(): Promise<GeminiConfig> {
   if (!settings.geminiApiKey) throw new GeminiError("API key Gemini belum diisi. Buka menu Pengaturan.");
   return {
     apiKey: settings.geminiApiKey,
-    model: settings.geminiModel,
+    model: settings.aiModel.trim() || undefined,
     fallbackModels: settings.geminiFallbackModels,
     searchMode: settings.searchMode,
     temperature: CREATIVITY_MODES[settings.creativity].temperature,

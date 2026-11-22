@@ -5,7 +5,8 @@ import { normalizeKeyword } from "@/lib/keyword";
 import { buildScoreboard } from "@/lib/research/service";
 import { extractTitlePatterns } from "@/lib/research/title-patterns";
 import { buildBriefPrompt, buildSystemInstruction, type CreativeBrief, parseCreativeBrief } from "./creative-brief";
-import { type GroundingSource, generateWithSearch } from "./gemini";
+import { generateText } from "./generate";
+import type { GroundingSource } from "./gemini";
 import { currentWorkspaceId } from "@/lib/workspace/context";
 import { buildResearchContext } from "./research-context";
 
@@ -37,7 +38,7 @@ export async function getStoredBriefs(keyword: string): Promise<StoredBriefs> {
 
 export async function generateBrief(keyword: string, assetType: AssetType, count: number): Promise<StoredBrief> {
   const context = await buildContextFor(keyword);
-  const result = await generateWithSearch(
+  const result = await generateText(
     buildSystemInstruction(assetType, count),
     buildBriefPrompt(context, assetType, count),
   );

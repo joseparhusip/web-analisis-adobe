@@ -38,7 +38,9 @@ ${CONTENT_RULES.map((rule) => `- ${rule}`).join("\n")}
 
 Each niche "keyword" is a 2 to 4 word English search phrase a buyer would type on Adobe Stock, in lowercase, staying inside the researched theme.
 Pick the asset type where the niche has the best chance. Order niches from best to worst opportunity.
-Write "summary" (two sentences) and each "reason" (one or two sentences, naming the evidence) in casual Indonesian.
+Base every niche and reason only on the research data and best-seller titles provided; do not invent demand numbers, competition figures, or trends that are not supported by the evidence. Use plain, literal language; no metaphors or hype.
+
+Write "summary" (two sentences) and each "reason" (one or two sentences, naming the concrete evidence) in casual Indonesian.
 
 Respond with ONLY a JSON object, no markdown fences, matching:
 {"summary": string, "niches": [{"keyword": string, "assetType": "photo"|"illustration"|"vector"|"video", "demand": "medium"|"high", "competition": "low"|"medium", "reason": string}]}`;
