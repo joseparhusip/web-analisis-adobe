@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
-import { useMemo, useState } from "react";
+import { type ComponentProps, useMemo, useState } from "react";
 import { CATEGORY_LABELS, type EventCategory } from "@/lib/calendar/events";
 import { monthEvents, type ScheduledEvent, uploadPlan } from "@/lib/calendar/schedule";
 import { Dropdown } from "@/components/ui/dropdown";
@@ -10,7 +10,8 @@ import { formatShortDate } from "@/lib/format";
 import { startOfUtcDay } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import { EventDialog } from "./event-dialog";
-import { countdownLabel, LEGEND_STATUSES, STATUS_CONFIG } from "./status";
+import { CountdownBadge } from "./countdown-badge";
+import { LEGEND_STATUSES, STATUS_CONFIG } from "./status";
 
 const WEEKDAYS = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
 const ALL = "all";
@@ -194,39 +195,41 @@ function WorkPlan({
   onOpen: (item: ScheduledEvent) => void;
 }) {
   return (
-    <section className="rounded-2xl border bg-card p-4">
+    <section className="rounded-2xl border bg-card p-4 sm:p-5">
       <h3 className="text-sm font-semibold capitalize">Rencana upload · {monthLabel}</h3>
       <p className="mt-0.5 text-xs text-muted-foreground">Tema yang jendela upload-nya terbuka di bulan ini, urut dari batas terdekat.</p>
 
       {plan.length === 0 ? (
         <p className="mt-3 text-sm text-muted-foreground">Tidak ada tema dalam jendela upload bulan ini.</p>
       ) : (
-        <ul className="mt-3 divide-y">
+        <ul className="mt-4 space-y-1.5">
           {plan.map((item) => (
-            <li key={item.event.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2">
-              <span className={cn("size-2 shrink-0 rounded-full", STATUS_CONFIG[item.status].dot)} aria-hidden />
-              <button type="button" onClick={() => onOpen(item)} className="text-sm font-medium hover:text-accent">
-                {item.event.name}
+            <li key={item.event.id} className="group flex items-center gap-3 rounded-xl px-2.5 py-2 transition hover:bg-muted">
+              <CountdownBadge days={item.daysUntil} status={item.status} />
+              <button type="button" onClick={() => onOpen(item)} className="min-w-0 flex-1 text-left">
+                <span className="block truncate text-sm font-medium group-hover:text-accent">{item.event.name}</span>
+                <span className="block text-xs text-muted-foreground">batas {formatShortDate(item.uploadDeadline)}</span>
               </button>
-              <span className="text-xs text-muted-foreground">
-                batas {formatShortDate(item.uploadDeadline)} · {countdownLabel(item.daysUntil)}
-              </span>
-              <span className="ml-auto flex gap-3 text-xs">
-                <Link href={{ pathname: "/research", query: { q: item.event.keywords[0] } }} className="font-medium text-accent hover:underline">
-                  Riset
-                </Link>
-                <Link
-                  href={{ pathname: "/research", query: { q: item.event.keywords[0] }, hash: "prompt" }}
-                  className="font-medium text-accent hover:underline"
-                >
-                  Prompt
-                </Link>
+              <span className="flex shrink-0 gap-1.5">
+                <PlanAction href={{ pathname: "/research", query: { q: item.event.keywords[0] } }}>Riset</PlanAction>
+                <PlanAction href={{ pathname: "/research", query: { q: item.event.keywords[0] }, hash: "prompt" }}>Prompt</PlanAction>
               </span>
             </li>
           ))}
         </ul>
       )}
     </section>
+  );
+}
+
+function PlanAction({ href, children }: { href: ComponentProps<typeof Link>["href"]; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground transition hover:bg-accent-soft hover:text-accent"
+    >
+      {children}
+    </Link>
   );
 }
 
