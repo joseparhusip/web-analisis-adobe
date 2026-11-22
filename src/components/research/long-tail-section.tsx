@@ -1,3 +1,4 @@
+import { Hash } from "lucide-react";
 import { getLongTail } from "@/app/(main)/research/data";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { LongTailTable } from "./long-tail-table";
@@ -8,6 +9,7 @@ export async function LongTailSection({ keyword }: { keyword: string }) {
   return (
     <Card>
       <CardHeader
+        icon={<Hash className="size-4" />}
         title="Keyword turunan terbaik"
         description={`${keywords.length} frasa terkuat dari ${totalCandidates} pencarian nyata di Google dan YouTube (AS), sudah dibersihkan dari duplikat dan noise.`}
       />

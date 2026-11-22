@@ -1,10 +1,11 @@
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Film, Gauge, Image as ImageIcon, Palette, PenTool } from "lucide-react";
+import type { ComponentType } from "react";
 import { getScores } from "@/app/(main)/research/data";
 import { Badge, type Tone } from "@/components/ui/badge";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Meter } from "@/components/ui/meter";
 import { buildAdobeSearchUrl } from "@/lib/adobe/search-url";
-import { ASSET_TYPE_META } from "@/lib/asset-types";
+import { ASSET_TYPE_META, type AssetType } from "@/lib/asset-types";
 import { formatCompact, formatRelativeDays } from "@/lib/format";
 import { type AssetScore, bestScore, type OpportunityLevel, opportunityLevel } from "@/lib/research/scoring";
 import { daysBetween } from "@/lib/time";
@@ -16,6 +17,13 @@ const LEVEL_META: Record<OpportunityLevel, { label: string; tone: Tone }> = {
   low: { label: "Padat", tone: "danger" },
 };
 
+const TYPE_ICON: Record<AssetType, ComponentType<{ className?: string }>> = {
+  photo: ImageIcon,
+  illustration: Palette,
+  vector: PenTool,
+  video: Film,
+};
+
 const SOURCE_LABELS = { adobe: "Adobe Stock", shutterstock: "Shutterstock" } as const;
 
 export async function ScoreSection({ keyword }: { keyword: string }) {
@@ -25,8 +33,9 @@ export async function ScoreSection({ keyword }: { keyword: string }) {
   return (
     <Card>
       <CardHeader
+        icon={<Gauge className="size-4" />}
         title="Skor peluang per tipe aset"
-        description="Peluang = permintaan dibanding jumlah aset yang sudah ada. Skor relatif, gunakan untuk membandingkan."
+        description="Peluang = permintaan dibanding jumlah aset yang sudah ada. Skor relatif, untuk membandingkan."
         action={
           best && (
             <Badge tone="success" className="text-xs">
@@ -46,17 +55,32 @@ export async function ScoreSection({ keyword }: { keyword: string }) {
 
 function ScoreCard({ keyword, score }: { keyword: string; score: AssetScore }) {
   const meta = ASSET_TYPE_META[score.assetType];
-  const level = score.opportunity === null ? undefined : LEVEL_META[opportunityLevel(score.opportunity)];
+  const Icon = TYPE_ICON[score.assetType];
+  const hasOpportunity = score.opportunity !== null;
+  const level = hasOpportunity ? LEVEL_META[opportunityLevel(score.opportunity!)] : undefined;
   const entry = score.competitionEntry;
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border p-4">
-      <div className="flex items-start justify-between">
+    <div className="flex flex-col gap-4 rounded-2xl border p-4 transition hover:shadow-sm">
+      <div className="flex items-center gap-2.5">
+        <span className="grid size-9 place-items-center rounded-xl bg-muted">
+          <Icon className="size-4" />
+        </span>
+        <p className="font-medium">{meta.label}</p>
+      </div>
+
+      <div className="flex items-end justify-between gap-2">
         <div>
-          <p className="text-sm font-medium">{meta.label}</p>
-          <p className="mt-1 text-3xl font-semibold tabular-nums">{score.opportunity ?? "–"}</p>
+          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            {hasOpportunity ? "Peluang" : "Permintaan"}
+          </p>
+          <p className="text-4xl font-bold leading-none tabular-nums">{hasOpportunity ? score.opportunity : score.demand}</p>
         </div>
-        {level && <Badge tone={level.tone}>{level.label}</Badge>}
+        {level ? (
+          <Badge tone={level.tone}>{level.label}</Badge>
+        ) : (
+          <span className="text-[11px] text-muted-foreground">isi data Adobe</span>
+        )}
       </div>
 
       <div className="space-y-2.5">

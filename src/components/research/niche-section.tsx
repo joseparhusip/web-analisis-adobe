@@ -1,3 +1,4 @@
+import { Radar } from "lucide-react";
 import { getCompetition } from "@/app/(main)/research/data";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { isGeminiConfigured } from "@/lib/ai/gemini";
@@ -22,6 +23,7 @@ export async function NicheSection({ keyword }: { keyword: string }) {
   return (
     <Card>
       <CardHeader
+        icon={<Radar className="size-4" />}
         title="Niche sepi pesaing"
         description="Gemini membandingkan aset terlaris, tren, dan pencarian nyata untuk menemukan sub-tema yang dicari pembeli tapi masih sedikit pesaingnya."
       />

@@ -1,4 +1,4 @@
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Flame } from "lucide-react";
 import { getCompetition, getLongTail } from "@/app/(main)/research/data";
 import { CopyButton } from "@/components/copy-button";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +51,7 @@ export async function BestSellerSection({ keyword }: { keyword: string }) {
         signature={adobeSignature(observedTimes.length > 0 ? Math.max(...observedTimes) : null, extension.lastSeenAt)}
       />
       <CardHeader
+        icon={<Flame className="size-4" />}
         title="Apa yang laku di Adobe Stock"
         description="Aset terlaris dari halaman Adobe Stock yang kamu buka dengan ekstensi Stock Research."
         action={<ExtensionBadge status={extension} />}

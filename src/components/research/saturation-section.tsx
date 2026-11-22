@@ -1,3 +1,4 @@
+import { Activity } from "lucide-react";
 import { getObservationHistory, type SaturationSeries } from "@/lib/adobe/observations";
 import { ASSET_TYPE_META } from "@/lib/asset-types";
 import { Badge, type Tone } from "@/components/ui/badge";
@@ -24,6 +25,7 @@ export async function SaturationSection({ keyword }: { keyword: string }) {
   return (
     <Card>
       <CardHeader
+        icon={<Activity className="size-4" />}
         title="Kejenuhan dari waktu ke waktu"
         description="Perubahan jumlah aset Adobe untuk keyword ini. Naik cepat = makin banyak kontributor masuk."
       />

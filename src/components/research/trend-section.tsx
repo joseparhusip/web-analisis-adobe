@@ -6,6 +6,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
 import { MONTH_NAMES, formatPercent } from "@/lib/format";
 import type { TrendInsight } from "@/lib/research/trend-analysis";
+import { LineChart } from "lucide-react";
 import { describeTrend, type FindingTone } from "@/lib/research/trend-narrative";
 import { cn } from "@/lib/utils";
 import { TRENDS_GEO } from "@/lib/sources/google-trends";
@@ -32,7 +33,7 @@ export async function TrendSection({ keyword }: { keyword: string }) {
   if (trends.status === "unavailable") {
     return (
       <Card>
-        <CardHeader title="Tren minat 5 tahun" action={trendsLink} />
+        <CardHeader icon={<LineChart className="size-4" />} title="Tren minat 5 tahun" action={trendsLink} />
         <CardBody>
           <Notice tone="warning" title={trends.retryAt ? "Google Trends sedang membatasi akses" : "Data Google Trends tidak tersedia"}>
             {trends.retryAt
@@ -50,7 +51,12 @@ export async function TrendSection({ keyword }: { keyword: string }) {
 
   return (
     <Card>
-      <CardHeader title="Tren minat 5 tahun" description="Sumber: Google Trends, Amerika Serikat." action={trendsLink} />
+      <CardHeader
+        icon={<LineChart className="size-4" />}
+        title="Tren minat 5 tahun"
+        description="Sumber: Google Trends, Amerika Serikat."
+        action={trendsLink}
+      />
       <CardBody className="space-y-6">
         <TrendStats insight={insight} />
         <TrendFindings insight={insight} />

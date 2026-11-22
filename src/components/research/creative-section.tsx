@@ -1,3 +1,4 @@
+import { Sparkles } from "lucide-react";
 import { getCompetition, getLongTail, getScores, getTrends } from "@/app/(main)/research/data";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { getStoredBriefs } from "@/lib/ai/brief-service";
@@ -40,6 +41,7 @@ export async function CreativeSection({ keyword, requestedType }: CreativeSectio
   return (
     <Card>
       <CardHeader
+        icon={<Sparkles className="size-4" />}
         title="Prompt Google Flow"
         description="Pilih jenis aset dan jumlah prompt, lalu Gemini menyusun analisis dan konsep: background minimalis, tanpa manusia, tanpa HAKI."
       />
